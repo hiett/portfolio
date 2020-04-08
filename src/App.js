@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {LineBasicMaterial, Mesh, PerspectiveCamera, Scene, WebGLRenderer} from "three";
-import {OBJLoader} from 'three/examples/jsm/loaders/OBJLoader';
+import {PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import Model, {CustomModel} from "./constants/Model";
 
 export default class App extends Component {
 
@@ -15,32 +15,17 @@ export default class App extends Component {
 
     const scene = new Scene();
 
-    const material = new LineBasicMaterial({color: 0x0000ff});
-
-    const loader = new OBJLoader();
-    let teapot;
-    loader.load('models/teapot.obj', function (model) {
-
-      model.traverse(function (child) {
-        if (child instanceof Mesh) {
-          child.material = material;
-
-          teapot = child;
-        }
-      });
-
-      scene.add(model);
-    });
+    const testModel = new CustomModel(Model.BOAT, scene);
 
     setInterval(() => {
       renderer.render(scene, camera);
 
-      if (teapot) {
-        teapot.rotateY(0.1);
-        teapot.rotateX(0.1);
-        teapot.rotateZ(0.1);
+      if (testModel.ready) {
+        testModel.object.rotateY(0.1);
+        testModel.object.rotateX(0.1);
+        testModel.object.rotateZ(0.1);
       }
-    }, 1000 / 30);
+    }, 1000 / 60);
   }
 
   render() {

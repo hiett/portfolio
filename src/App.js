@@ -148,8 +148,8 @@ export default class App extends Component {
     // scene.add(plane);
     // plane.rotateX(Math.PI / 2);
 
-    // const light = new AmbientLight(0x404040); // soft white light
-    // scene.add(light);
+    const ambientLight = new AmbientLight(0x404040); // soft white light
+    scene.add(ambientLight);
 
     addInputListeners();
 

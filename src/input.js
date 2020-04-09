@@ -55,7 +55,7 @@ const handleKey = (event, state = false) => {
 const moveForward = (speed, camera) => {
   const delta_x = speed * Math.cos(direction);
   const delta_z = speed * Math.sin(direction);
-  const new_x = camera.position.xw + delta_x;
+  const new_x = camera.position.x + delta_x;
   const new_z = camera.position.z + delta_z;
   camera.position.x = new_x;
   camera.position.z = new_z;

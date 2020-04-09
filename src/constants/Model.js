@@ -1,10 +1,13 @@
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {LineBasicMaterial, Mesh} from "three";
+import {Mesh} from "three";
+import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 
 const getModel = name => `models/${name.includes(".") ? name : `${name}.obj`}`;
+const getDir = name => ({mesh: `models/${name}/${name}.obj`, materialUrl: `models/${name}/${name}.mtl`});
 
 const Model = {
-  BOAT: {mesh: getModel("cube"), material: new LineBasicMaterial({color: 0x0000ff})},
+  BOAT: getDir("Boat"), // {mesh: getModel("boat"), material: new LineBasicMaterial({color: 0x0000ff})}
+  ISLAND1: getDir("Island1"),
 };
 
 const modelStore = [];
@@ -31,22 +34,37 @@ class CustomModel {
     this.modelType = modelType;
     this.ready = false;
     this.object = null;
+    this.material = null;
     this.scene = scene;
+    this.readyHooks = [];
 
-    this.handleLoad = this.handleLoad.bind(this);
+    this.handleLoadObject = this.handleLoadObject.bind(this);
+    this.handleLoadMaterial = this.handleLoadMaterial.bind(this);
 
     this.startLoad();
 
     modelStore.push(this);
   }
 
+  addReadyHook(callback) {
+    if (this.ready) {
+      callback(this.object);
+
+      return;
+    }
+
+    this.readyHooks.push(callback);
+  }
+
   startLoad() {
     const extension = this.modelType.mesh.split(".").pop().toLowerCase();
 
     let loader = null;
+    let materialLoader = null;
     switch (extension) {
       case "obj": {
         loader = new OBJLoader();
+        materialLoader = new MTLLoader();
 
         break;
       } // ...more will be added as needed
@@ -60,14 +78,31 @@ class CustomModel {
       return;
     }
 
-    loader.load(this.modelType.mesh, this.handleLoad);
+    if (this.modelType.materialUrl && materialLoader) {
+      console.log("Using material loader.");
+      this._loader = loader;
+      materialLoader.load(this.modelType.materialUrl, this.handleLoadMaterial);
+    } else {
+      loader.load(this.modelType.mesh, this.handleLoadObject);
+    }
   }
 
-  handleLoad(model) {
+  handleLoadMaterial(materials) {
+    materials.preload();
+
+    this._loader.setMaterials(materials);
+    this._loader.load(this.modelType.mesh, this.handleLoadObject);
+  }
+
+  handleLoadObject(model) {
     model.traverse(child => {
       if (child instanceof Mesh) {
         if (this.modelType.material) {
-          child.material = this.modelType.material;
+          this.material = this.modelType.material;
+        }
+
+        if (this.material) {
+          child.material = this.material;
         }
 
         this.object = model;
@@ -78,6 +113,8 @@ class CustomModel {
     if (this.scene) {
       this.scene.add(model);
     }
+
+    this.readyHooks.forEach(hook => hook(this.object));
   }
 }
 

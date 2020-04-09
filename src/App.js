@@ -29,7 +29,9 @@ export default class App extends Component {
 
     const testModel = new CustomModel(Model.BOAT, scene);
     testModel.addReadyHook(mesh => {
-      mesh.applyMatrix(new Matrix4().makeRotationX(Math.PI).makeRotationZ(Math.PI / 2));
+      // .makeRotationX(Math.PI).
+
+      mesh.applyMatrix(new Matrix4().makeRotationZ(Math.PI / 2));
       // mesh.applyMatrix( new Matrix4().makeRotationZ( Math.PI / 2 ) );
       mesh.translateY(1);
     });
@@ -55,10 +57,13 @@ export default class App extends Component {
 
     addInputListeners();
 
+    let i = 0;
     setInterval(() => {
       renderer.render(scene, camera);
 
       if (areAllModelsReady()) {
+        // testModel.object.applyMatrix(new Matrix4().makeRotationX(Math.PI / 4));
+
         // Move this around X and Z
         updatePlayer(testModel.object);
 
@@ -72,7 +77,7 @@ export default class App extends Component {
         // testModel.object.translateX(1);
 
       }
-    }, 1000 / 60);
+    }, 1000 / 144); // Target FPS
   }
 
   render() {

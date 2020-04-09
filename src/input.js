@@ -81,23 +81,29 @@ const setPlayerDirection = mesh => {
   mesh.lookAt(directionVector);
 };
 
+let lastTime = Date.now();
+const targetTime = 1000 / 60;
+
 const updatePlayer = camera => {
+  const deltaTime = (Date.now() - lastTime) / targetTime; // This is number of MS since the last frame.
+  lastTime = Date.now();
+
   if (moving.rotatingLeft) {
-    direction -= angularSpeed;
+    direction -= angularSpeed * deltaTime;
   }
   if (moving.rotatingRight) {
-    direction += angularSpeed;
+    direction += angularSpeed * deltaTime;
   }
   if (moving.rotatingRight || moving.rotatingLeft) {
     setPlayerDirection(camera);
   }
 
   if (moving.forwards) {
-    moveForward(playerSpeed, camera);
+    moveForward(playerSpeed * deltaTime, camera);
 
   }
   if (moving.backwards) {
-    moveForward(-playerBackwardsSpeed, camera);
+    moveForward(-playerBackwardsSpeed * deltaTime, camera);
   }
 };
 

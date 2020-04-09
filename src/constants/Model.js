@@ -8,6 +8,8 @@ const getDir = name => ({mesh: `models/${name}/${name}.obj`, materialUrl: `model
 const Model = {
   BOAT: getDir("Boat"), // {mesh: getModel("boat"), material: new LineBasicMaterial({color: 0x0000ff})}
   ISLAND1: getDir("Island1"),
+  SMALL_ISLAND_1: getDir("SmallIsland1"),
+  SMALL_ISLAND_2: getDir("SmallIsland2"),
 };
 
 const modelStore = [];

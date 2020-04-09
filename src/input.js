@@ -1,4 +1,5 @@
 import {Vector3} from "three";
+import {Box3} from "three/src/math/Box3";
 
 const moveSpeed = 1;
 const angularSpeed = 0.01;
@@ -23,8 +24,6 @@ const KEY_MAPPINGS = {
 };
 
 const handleKey = (event, state = false) => {
-  console.log(event);
-
   switch (event.keyCode) {
     case KEY_MAPPINGS.W: {
       moving.forwards = state;
@@ -71,6 +70,15 @@ const moveForward = (speed, mesh) => {
 const setPlayerDirection = mesh => {
   const delta_x = playerSpeed * Math.cos(direction);
   const delta_z = playerSpeed * Math.sin(direction);
+
+  // Measure the mesh size TODO: Cache this
+  // const box = new Box3().setFromObject(mesh);
+  // const target = new Vector3(0, 0, 0);
+
+  // box.getSize(target);
+
+  // console.log("Size:", target);
+  // console.log(mesh.position.x - target.x);
 
   const new_dx = mesh.position.x + delta_x;
   const new_dz = mesh.position.z + delta_z;

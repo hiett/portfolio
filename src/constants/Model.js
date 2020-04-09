@@ -7,6 +7,24 @@ const Model = {
   BOAT: {mesh: getModel("cube"), material: new LineBasicMaterial({color: 0x0000ff})},
 };
 
+const modelStore = [];
+
+// Cache this response
+let modelsReady = false;
+// This only works for initial load. Retro-added models won't count here.
+const areAllModelsReady = () => {
+  if (modelsReady)
+    return true;
+
+  if (modelStore.filter(model => !model.ready).length === 0) {
+    modelsReady = true;
+
+    return true;
+  }
+
+  return false;
+};
+
 class CustomModel {
 
   constructor(modelType, scene) {
@@ -18,6 +36,8 @@ class CustomModel {
     this.handleLoad = this.handleLoad.bind(this);
 
     this.startLoad();
+
+    modelStore.push(this);
   }
 
   startLoad() {
@@ -61,5 +81,5 @@ class CustomModel {
   }
 }
 
-export {CustomModel};
+export {CustomModel, areAllModelsReady};
 export default Model;

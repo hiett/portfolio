@@ -10,6 +10,7 @@ const Model = {
   ISLAND1: getDir("Island1"),
   SMALL_ISLAND_1: getDir("SmallIsland1"),
   SMALL_ISLAND_2: getDir("SmallIsland2"),
+  ENTER_KEY: getDir("EnterKey"),
 };
 
 const modelStore = [];

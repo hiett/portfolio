@@ -1,5 +1,4 @@
 import {Vector3} from "three";
-import {Box3} from "three/src/math/Box3";
 
 const moveSpeed = 1;
 const angularSpeed = 0.01;

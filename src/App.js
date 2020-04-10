@@ -1,27 +1,33 @@
 import React, {Component} from 'react';
 import {
   AmbientLight,
-  DoubleSide,
+  BufferGeometry,
+  CubeCamera,
+  CubicBezierCurve3,
+  DirectionalLight,
+  LinearMipmapLinearFilter,
   Matrix4,
   Mesh,
-  MeshBasicMaterial,
+  MeshPhongMaterial,
   PerspectiveCamera,
-  PlaneGeometry,
-  PointLight,
-  Scene,
-  WebGLRenderer,
   PlaneBufferGeometry,
-  TextureLoader,
+  PointLight,
   RepeatWrapping,
-  DirectionalLight,
-  CubeCamera,
-  LinearMipmapLinearFilter,
+  Scene,
+  TextGeometry,
+  TextureLoader,
+  Vector3,
+  WebGLRenderer,
 } from "three";
 import Model, {areAllModelsReady, CustomModel} from "./constants/Model";
 import {addInputListeners, updatePlayer} from "./input";
 import {Water} from "./Water";
 import {Sky} from "./Sky";
 import {OrbitControls} from "./OrbitControls";
+import Font, {CustomFont} from "./constants/Font";
+import CustomText from "./constants/CustomText";
+
+const START_AREA_OFFSET = 250;
 
 export default class App extends Component {
 
@@ -31,11 +37,10 @@ export default class App extends Component {
     document.body.appendChild(renderer.domElement);
 
     const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
-    camera.position.set(20, 30, 20);
-    camera.lookAt(0, 25, 0);
+    camera.position.set(0, 0, 0);
 
     // Cube
-    var cubeCamera = new CubeCamera( 0.1, 1, 512 );
+    var cubeCamera = new CubeCamera(0.1, 1, 512);
     cubeCamera.renderTarget.texture.generateMipmaps = true;
     cubeCamera.renderTarget.texture.minFilter = LinearMipmapLinearFilter;
 
@@ -43,21 +48,21 @@ export default class App extends Component {
 
     scene.background = cubeCamera.renderTarget;
 
-    const light = new DirectionalLight( 0xffffff, 0.8 );
-    scene.add( light );
+    const light = new DirectionalLight(0xffffff, 0.8);
+    scene.add(light);
 
-    const waterGeometry = new PlaneBufferGeometry( 10000, 10000 );
+    const waterGeometry = new PlaneBufferGeometry(10000, 10000);
 
     const water = new Water(
       waterGeometry,
       {
         textureWidth: 512,
         textureHeight: 512,
-        waterNormals: new TextureLoader().load( 'textures/waternormals.jpg', function ( texture ) {
+        waterNormals: new TextureLoader().load('textures/waternormals.jpg', function (texture) {
 
           texture.wrapS = texture.wrapT = RepeatWrapping;
 
-        } ),
+        }),
         alpha: 1.0,
         sunDirection: light.position.clone().normalize(),
         sunColor: 0xffffff,
@@ -67,7 +72,7 @@ export default class App extends Component {
       }
     );
 
-    water.rotation.x = - Math.PI / 2;
+    water.rotation.x = -Math.PI / 2;
 
     scene.add(water);
 
@@ -76,11 +81,11 @@ export default class App extends Component {
 
     const uniforms = sky.material.uniforms;
 
-    uniforms[ 'turbidity' ].value = 10;
-    uniforms[ 'rayleigh' ].value = 2;
-    uniforms[ 'luminance' ].value = 1;
-    uniforms[ 'mieCoefficient' ].value = 0.005;
-    uniforms[ 'mieDirectionalG' ].value = 0.8;
+    uniforms['turbidity'].value = 10;
+    uniforms['rayleigh'].value = 2;
+    uniforms['luminance'].value = 1;
+    uniforms['mieCoefficient'].value = 0.005;
+    uniforms['mieDirectionalG'].value = 0.8;
 
     const parameters = {
       distance: 400,
@@ -89,37 +94,33 @@ export default class App extends Component {
     };
 
     function updateSun() {
+      const theta = Math.PI * (parameters.inclination - 0.5);
+      const phi = 2 * Math.PI * (parameters.azimuth - 0.5);
 
-      var theta = Math.PI * ( parameters.inclination - 0.5 );
-      var phi = 2 * Math.PI * ( parameters.azimuth - 0.5 );
+      light.position.x = parameters.distance * Math.cos(phi);
+      light.position.y = parameters.distance * Math.sin(phi) * Math.sin(theta);
+      light.position.z = parameters.distance * Math.sin(phi) * Math.cos(theta);
 
-      light.position.x = parameters.distance * Math.cos( phi );
-      light.position.y = parameters.distance * Math.sin( phi ) * Math.sin( theta );
-      light.position.z = parameters.distance * Math.sin( phi ) * Math.cos( theta );
+      sky.material.uniforms['sunPosition'].value = light.position.copy(light.position);
+      water.material.uniforms['sunDirection'].value.copy(light.position).normalize();
 
-      sky.material.uniforms[ 'sunPosition' ].value = light.position.copy( light.position );
-      water.material.uniforms[ 'sunDirection' ].value.copy( light.position ).normalize();
-
-      cubeCamera.update( renderer, sky );
-
+      cubeCamera.update(renderer, sky);
     }
 
     updateSun();
 
-    const ISLAND_SPREAD = 40;
-    const ISLAND_SCALE = 2;
+    const ISLAND_SPREAD = 100;
+    const ISLAND_SCALE = 10;
 
     const islands = [];
-    for(let i = 0; i < 3; i++) {
+    for (let i = 0; i < 1; i++) {
       const island = new CustomModel(Model[`SMALL_ISLAND_${Math.random() > 0.5 ? 1 : 2}`], scene);
       const pointLight = new PointLight(0xffffff, 1, 15);
 
       island.addReadyHook(mesh => {
-        // mesh.setScale(2, 2, 2);
-
-        mesh.position.x = ISLAND_SPREAD * Math.random();
-        mesh.position.z = ISLAND_SPREAD * Math.random();
-        mesh.position.y = -4.1;
+        mesh.position.x = ISLAND_SPREAD * Math.random() + 20;
+        mesh.position.z = ISLAND_SPREAD * Math.random() + 20;
+        mesh.position.y = ISLAND_SCALE * -2;
 
         mesh.scale.set(ISLAND_SCALE, ISLAND_SCALE, ISLAND_SCALE);
         mesh.rotateY(Math.PI * Math.random());
@@ -128,34 +129,64 @@ export default class App extends Component {
         pointLight.lookAt(mesh.position);
         scene.add(pointLight);
 
-        camera.lookAt(mesh.position);
-
         islands.push(mesh);
       });
     }
+
     const testModel = new CustomModel(Model.BOAT, scene);
     testModel.addReadyHook(mesh => {
-      // .makeRotationX(Math.PI).
-
       mesh.applyMatrix(new Matrix4().makeRotationZ(Math.PI / 2));
-      // mesh.applyMatrix( new Matrix4().makeRotationZ( Math.PI / 2 ) );
-      mesh.translateY(1);
+      // mesh.applyMatrix(new Matrix4().makeTranslation(0, -0.1, 0));
     });
 
-    // const geometry = new PlaneGeometry(50, 50, 32);
-    // const material = new MeshBasicMaterial({color: 0xff0000, side: DoubleSide});
-    // const plane = new Mesh(geometry, material);
-    // scene.add(plane);
-    // plane.rotateX(Math.PI / 2);
+    const curve = new CubicBezierCurve3(
+      new Vector3(-10, 0, 0),
+      new Vector3(-5, 15, 0),
+      new Vector3(20, 15, 0),
+      new Vector3(10, 0, 0)
+    );
+
+    const points = curve.getPoints(1000); // Number of FRAMES. FPS x 1000 (ms -> s) x Seconds to run for
 
     const ambientLight = new AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
 
+    const titleFont = new CustomFont(Font.POPPINS);
+    titleFont.addReadyHook(fontOutput => {
+      const text = new CustomText("Scott Hiett", fontOutput, scene);
+      const textMesh = text.object;
+
+      textMesh.position.copy(new Vector3(START_AREA_OFFSET, 1, 0));
+      textMesh.rotateX(Math.PI / 2);
+      textMesh.rotateY(Math.PI);
+
+      camera.position.copy(textMesh.position);
+      camera.position.add(new Vector3(0, 75, 0));
+      camera.lookAt(textMesh.position);
+      camera.rotateZ(Math.PI);
+    });
+
+    const textFont = new CustomFont(Font.MONTSERRAT);
+    textFont.addReadyHook(fontOutput => {
+      const text = new CustomText("maker of things", fontOutput, scene, 1.3);
+      const textMesh = text.object;
+
+      textMesh.position.copy(new Vector3(START_AREA_OFFSET, 1, -2));
+      textMesh.rotateX(Math.PI / 2);
+      textMesh.rotateY(Math.PI);
+    });
+
+    const enterKey = new CustomModel(Model.ENTER_KEY, scene);
+    enterKey.addReadyHook(mesh => {
+      mesh.position.copy(new Vector3(START_AREA_OFFSET + 10, 1, -2));
+      mesh.rotateY(Math.PI);
+    });
+
     addInputListeners();
 
-    const controls = new OrbitControls( camera, renderer.domElement );
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.maxPolarAngle = Math.PI * 0.495;
-    controls.target.set( 0, 10, 0 );
+    controls.target.set(0, 10, 0);
     controls.minDistance = 40.0;
     controls.maxDistance = 200.0;
     controls.update();
@@ -163,11 +194,22 @@ export default class App extends Component {
     let lastFrameTime = Date.now();
     const targetTime = 1000 / 60;
 
+    let i = 0;
     setInterval(() => {
       const deltaTime = (Date.now() - lastFrameTime) / targetTime; // This is number of MS since the last frame.
       lastFrameTime = Date.now();
 
-      water.material.uniforms[ 'time' ].value += deltaTime / 100;
+      water.material.uniforms['time'].value += deltaTime / 100;
+
+      // Camera curve movements
+      // if(i !== points.length) {
+      //   const point = points[i++];
+      //
+      //   camera.position.copy(point);
+      //   if(areAllModelsReady()) {
+      //     camera.lookAt(islands[0].position);
+      //   }
+      // }
 
       renderer.render(scene, camera);
 

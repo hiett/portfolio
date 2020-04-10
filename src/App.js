@@ -32,6 +32,8 @@ const START_AREA_OFFSET = 250;
 export default class App extends Component {
 
   componentDidMount() {
+    const bezierVectors = [];
+
     const renderer = new WebGLRenderer({antialias: true, alpha: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
@@ -139,31 +141,31 @@ export default class App extends Component {
       // mesh.applyMatrix(new Matrix4().makeTranslation(0, -0.1, 0));
     });
 
-    const curve = new CubicBezierCurve3(
-      new Vector3(-10, 0, 0),
-      new Vector3(-5, 15, 0),
-      new Vector3(20, 15, 0),
-      new Vector3(10, 0, 0)
-    );
-
-    const points = curve.getPoints(1000); // Number of FRAMES. FPS x 1000 (ms -> s) x Seconds to run for
+    let points = [];
 
     const ambientLight = new AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
+
+    const TEXT_Y = 25;
 
     const titleFont = new CustomFont(Font.POPPINS);
     titleFont.addReadyHook(fontOutput => {
       const text = new CustomText("Scott Hiett", fontOutput, scene);
       const textMesh = text.object;
 
-      textMesh.position.copy(new Vector3(START_AREA_OFFSET, 1, 0));
+      textMesh.position.copy(new Vector3(START_AREA_OFFSET, TEXT_Y, 0));
       textMesh.rotateX(Math.PI / 2);
       textMesh.rotateY(Math.PI);
 
       camera.position.copy(textMesh.position);
-      camera.position.add(new Vector3(0, 75, 0));
+      camera.position.add(new Vector3(0, 75 + TEXT_Y, 0));
       camera.lookAt(textMesh.position);
       camera.rotateZ(Math.PI);
+
+      bezierVectors.push(new Vector3().copy(camera.position));
+      bezierVectors.push(new Vector3().copy(textMesh.position));
+      bezierVectors.push(new Vector3().copy(textMesh.position));
+      bezierVectors.push(new Vector3().copy(textMesh.position));
     });
 
     const textFont = new CustomFont(Font.MONTSERRAT);
@@ -171,14 +173,14 @@ export default class App extends Component {
       const text = new CustomText("maker of things", fontOutput, scene, 1.3);
       const textMesh = text.object;
 
-      textMesh.position.copy(new Vector3(START_AREA_OFFSET, 1, -2));
+      textMesh.position.copy(new Vector3(START_AREA_OFFSET, TEXT_Y, -2));
       textMesh.rotateX(Math.PI / 2);
       textMesh.rotateY(Math.PI);
     });
 
     const enterKey = new CustomModel(Model.ENTER_KEY, scene);
     enterKey.addReadyHook(mesh => {
-      mesh.position.copy(new Vector3(START_AREA_OFFSET + 10, 1, -2));
+      mesh.position.copy(new Vector3(START_AREA_OFFSET + 13, TEXT_Y, -2));
       mesh.rotateY(Math.PI);
     });
 
@@ -194,6 +196,8 @@ export default class App extends Component {
     let lastFrameTime = Date.now();
     const targetTime = 1000 / 60;
 
+    let runningCameraAnimation = false;
+
     let i = 0;
     setInterval(() => {
       const deltaTime = (Date.now() - lastFrameTime) / targetTime; // This is number of MS since the last frame.
@@ -202,14 +206,14 @@ export default class App extends Component {
       water.material.uniforms['time'].value += deltaTime / 100;
 
       // Camera curve movements
-      // if(i !== points.length) {
-      //   const point = points[i++];
-      //
-      //   camera.position.copy(point);
-      //   if(areAllModelsReady()) {
-      //     camera.lookAt(islands[0].position);
-      //   }
-      // }
+      if(runningCameraAnimation && i !== points.length) {
+        const point = points[i++];
+
+        camera.position.copy(point);
+        // if(areAllModelsReady()) {
+        //   camera.lookAt(islands[0].position);
+        // }
+      }
 
       renderer.render(scene, camera);
 
@@ -220,6 +224,34 @@ export default class App extends Component {
         // camera.lookAt(testModel.object.position);
       }
     }, 1000 / 144); // Target FPS
+
+    window.addEventListener("resize", event => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    window.addEventListener("keyup", event => {
+      const {keyCode} = event;
+
+      switch(keyCode) {
+        case 13: {
+          // bezierVectors.push(islands[0].position);
+
+          const curve = new CubicBezierCurve3(
+            ...bezierVectors,
+          );
+
+          console.log(curve.getPoints(5));
+
+          points = curve.getPoints(1000); // Number of FRAMES. FPS x 1000 (ms -> s) x Seconds to run for
+
+          runningCameraAnimation = true;
+
+          break;
+        }
+      }
+    });
   }
 
   render() {

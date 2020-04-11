@@ -17,18 +17,19 @@ import {
 } from "three";
 import Model, {areAllModelsReady, CustomModel} from "./constants/Model";
 import {addInputListeners, updatePlayer} from "./input";
-import {Water} from "./Water";
-import {Sky} from "./Sky";
 import {OrbitControls} from "./OrbitControls";
 import Font, {CustomFont} from "./constants/Font";
 import CustomText from "./constants/CustomText";
 import CameraPath from "./camera/CameraPath";
 import WaterWorld from "./WaterWorld";
+import DebugOverlay from "./react/components/DebugOverlay";
+import {connect} from "react-redux";
+import {setFrameDeltaTimes} from "./react/redux/actions";
 
 const START_AREA_OFFSET = 250;
 const START_CAMERA_Y_OFFSET = 150;
 
-export default class App extends Component {
+class App extends Component {
 
   componentDidMount() {
     const bezierVectors = [];
@@ -125,12 +126,21 @@ export default class App extends Component {
 
     let lastFrameTime = Date.now();
     const targetTime = 1000 / 60;
+    let lastFrameTimeVisualUpdate = 0;
 
     let runningCameraAnimation = false;
 
     let i = 0;
-    setInterval(() => {
+    const computeFrame = () => {
       const deltaTime = (Date.now() - lastFrameTime) / targetTime; // This is number of MS since the last frame.
+
+      if(lastFrameTimeVisualUpdate + 1000 < Date.now()) {
+        // Dispatch this
+        this.props.dispatch(setFrameDeltaTimes((Date.now() - lastFrameTime) + "ms", deltaTime));
+
+        lastFrameTimeVisualUpdate = Date.now();
+      }
+
       lastFrameTime = Date.now();
 
       this.waterWorld.water.material.uniforms['time'].value += deltaTime / 100;
@@ -155,7 +165,11 @@ export default class App extends Component {
 
         // camera.lookAt(testModel.object.position);
       }
-    }, 1000 / 144); // Target FPS
+
+      requestAnimationFrame(computeFrame);
+    };
+
+    requestAnimationFrame(computeFrame);
 
     window.addEventListener("resize", event => {
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -176,6 +190,7 @@ export default class App extends Component {
             new Vector3(camera.position.x + 50, 2, camera.position.z),
           ], true, null, camera => {
             console.log("Frame modifier");
+            // camera.setRot
             camera.rotateZ(-Math.PI / 2);
           });
           this.introCameraPathAnimation.start();
@@ -188,7 +203,9 @@ export default class App extends Component {
 
   render() {
     return (
-      <></>
+      <DebugOverlay />
     );
   }
 }
+
+export default connect()(App);

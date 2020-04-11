@@ -13,6 +13,7 @@ export default class CameraPath {
     this.loop = loop;
     this.frame = 0;
     this.frameModifier = frameModifier;
+    this.onEndHooks = [];
 
     this.playing = false;
     this._update = this._update.bind(this);
@@ -24,6 +25,10 @@ export default class CameraPath {
 
   static runPathUpdatesTick() {
     cameraPaths.forEach(path => path._update());
+  }
+
+  addOnEndHook(hook) {
+    this.onEndHooks.push(hook);
   }
 
   createPaths() {
@@ -51,6 +56,8 @@ export default class CameraPath {
 
   stop() {
     this.playing = false;
+
+    this.onEndHooks.forEach(hook => hook());
   }
 
   _update() {

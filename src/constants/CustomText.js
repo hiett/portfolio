@@ -24,7 +24,7 @@ export default class CustomText {
     const textGeo = new BufferGeometry().fromGeometry(text);
     this.object = new Mesh(textGeo, new MeshPhongMaterial({color: 0xffffff, flatShading: true}));
 
-    if(this.scene) {
+    if (this.scene) {
       this.scene.add(this.object);
     }
   }

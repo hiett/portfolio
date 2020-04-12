@@ -1,10 +1,12 @@
 import React from "react";
 
 import * as Styled from "./styles";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {setRenderResolutionMultiplier} from "../../redux/actions";
 
 const DebugOverlay = () => {
-  const {frameDeltaTime, deltaTimePhysicsMultiplier} = useSelector(state => state);
+  const dispatch = useDispatch();
+  const {frameDeltaTime, deltaTimePhysicsMultiplier, renderResolutionMultiplier} = useSelector(state => state);
 
   return (
     <Styled.OverlayContainer>
@@ -14,6 +16,10 @@ const DebugOverlay = () => {
       <p>Minigame Loaded: <Styled.StatusContent>None</Styled.StatusContent></p>
       <p>Frame Delta Time: <Styled.StatusContent>{frameDeltaTime}</Styled.StatusContent></p>
       <p>Physics Multiplier: <Styled.StatusContent>{deltaTimePhysicsMultiplier}</Styled.StatusContent></p>
+      <p>Render Resolution: <Styled.StatusContent>{Math.round(renderResolutionMultiplier * 100)}%</Styled.StatusContent>
+      </p>
+      <Styled.RenderResolutionSlider type="range" min={1} max={100} value={renderResolutionMultiplier * 100}
+                                     onChange={e => dispatch(setRenderResolutionMultiplier(parseFloat(e.target.value) / 100))}/>
     </Styled.OverlayContainer>
   );
 };

@@ -1,14 +1,23 @@
+const MinigameType = {};
+const MinigameTypeMappings = {};
+
 export default class Minigame {
 
   constructor(name) {
     this.name = name;
   }
 
-  start() {}
+  start() {
+  }
 
-  stop() {}
+  stop() {
+  }
 
-  handlePacket(packet) {}
+  handlePacket(packet) {
+  }
 
-  renderHook() {}
+  renderHook() {
+  }
 }
+
+export {MinigameType, MinigameTypeMappings};

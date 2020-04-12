@@ -65,8 +65,8 @@ export default class CameraPath {
       return;
     }
 
-    if(this.frame === this.divisions - 1) {
-      if(this.loop) {
+    if (this.frame === this.divisions - 1) {
+      if (this.loop) {
         this.frame = 0;
       } else {
         this.stop();
@@ -80,7 +80,7 @@ export default class CameraPath {
     const movement = this._movementPoints[this.frame];
     const tracking = this._trackingPoints[this.frame];
 
-    if(!movement || !tracking) {
+    if (!movement || !tracking) {
       console.log("NOT MOVEMENT OR TRACKING.");
 
       return;
@@ -89,7 +89,7 @@ export default class CameraPath {
     this.camera.position.copy(movement);
     this.camera.lookAt(tracking);
 
-    if(this.frameModifier) {
+    if (this.frameModifier) {
       this.frameModifier(this.camera);
     }
   }

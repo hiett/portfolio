@@ -1,10 +1,10 @@
 import {
   CubeCamera,
   DirectionalLight,
+  LinearMipmapLinearFilter,
   PlaneBufferGeometry,
-  TextureLoader,
   RepeatWrapping,
-  LinearMipmapLinearFilter
+  TextureLoader
 } from "three";
 import {Water} from "three/examples/jsm/objects/Water";
 import {Sky} from "three/examples/jsm/objects/Sky";

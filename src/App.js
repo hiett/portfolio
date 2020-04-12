@@ -1,20 +1,5 @@
 import React, {Component} from 'react';
-import {
-  AmbientLight,
-  CubeCamera,
-  CubicBezierCurve3,
-  DirectionalLight,
-  LinearMipmapLinearFilter,
-  Matrix4,
-  PerspectiveCamera,
-  PlaneBufferGeometry,
-  PointLight,
-  RepeatWrapping,
-  Scene,
-  TextureLoader,
-  Vector3,
-  WebGLRenderer,
-} from "three";
+import {AmbientLight, Matrix4, PerspectiveCamera, PointLight, Scene, Vector3, WebGLRenderer,} from "three";
 import Model, {areAllModelsReady, CustomModel} from "./constants/Model";
 import {addInputListeners, updatePlayer} from "./input";
 import {OrbitControls} from "./OrbitControls";
@@ -22,16 +7,16 @@ import Font, {CustomFont} from "./constants/Font";
 import CustomText from "./constants/CustomText";
 import CameraPath from "./camera/CameraPath";
 import WaterWorld from "./WaterWorld";
-import DebugOverlay from "./react/components/DebugOverlay";
 import {connect} from "react-redux";
 import {setFrameDeltaTimes} from "./react/redux/actions";
+import GamePage from "./react/pages/GamePage";
 
 const START_AREA_OFFSET = 250;
 const START_CAMERA_Y_OFFSET = 150;
 
 class App extends Component {
 
-  componentDidMount() {
+  _componentDidMount() {
     const bezierVectors = [];
 
     const renderer = new WebGLRenderer({antialias: true, alpha: true});
@@ -51,7 +36,7 @@ class App extends Component {
     const islands = [];
     for (let i = 0; i < 1; i++) {
       const island = new CustomModel(Model[`SMALL_ISLAND_${Math.random() > 0.5 ? 1 : 2}`], scene);
-      const pointLight = new PointLight(0xffffff, 1, 15);
+      const pointLight = new PointLight(0xffffff, 1, 30);
 
       island.addReadyHook(mesh => {
         mesh.position.x = ISLAND_SPREAD * Math.random() + 20;
@@ -134,7 +119,7 @@ class App extends Component {
     const computeFrame = () => {
       const deltaTime = (Date.now() - lastFrameTime) / targetTime; // This is number of MS since the last frame.
 
-      if(lastFrameTimeVisualUpdate + 1000 < Date.now()) {
+      if (lastFrameTimeVisualUpdate + 1000 < Date.now()) {
         // Dispatch this
         this.props.dispatch(setFrameDeltaTimes((Date.now() - lastFrameTime) + "ms", deltaTime));
 
@@ -203,7 +188,7 @@ class App extends Component {
 
   render() {
     return (
-      <DebugOverlay />
+      <GamePage/>
     );
   }
 }

@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "babel -d ./build ./src -s",
-    "start": "node ./build/GameServer.js"
+    "start": "node ./build/App.js"
   },
   "dependencies": {
     "@babel/cli": "^7.8.4",

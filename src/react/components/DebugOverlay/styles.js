@@ -11,6 +11,7 @@ export const OverlayContainer = styled.div`
   padding: 5px;
   color: white;
   font-family: sans-serif;
+  user-select: none;
   
   h1, h2, h3, h4, h5 {
     padding: 0;
@@ -27,4 +28,8 @@ export const OverlayContainer = styled.div`
 export const StatusContent = styled.span`
   color: #7bd4ff;
   text-shadow: 0 0 5px black;
+`;
+
+export const RenderResolutionSlider = styled.input`
+  width: 100%;
 `;

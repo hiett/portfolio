@@ -14,7 +14,7 @@
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.9.5",
     "@babel/runtime": "^7.9.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "socket.io": "^2.3.0"
   }
 }
